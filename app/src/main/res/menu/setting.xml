@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/viewMyInfo"
+        android:title="مشاهده اطلاعات کاربری"
+        />
+    <item
+        android:id="@+id/increaseCredit"
+        android:title="افزایش اعتبار"
+        />
+    <item android:id="@+id/shoppingCart"
+        android:title="مشاهده سبد خرید">
+    </item>
+
+</menu>

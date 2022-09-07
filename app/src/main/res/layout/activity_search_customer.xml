@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".controller.activity.admin.SearchCustomerActivity">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/home_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/toolbar">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="جستجو مشتری"
+            android:layout_gravity="right"
+            android:layout_marginRight="5dp"
+            android:textSize="20sp"
+            android:textColor="@color/white"/>
+    </android.support.v7.widget.Toolbar>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/info"
+        android:orientation="vertical"
+        android:layout_below="@+id/home_toolbar"
+        android:layout_margin="30dp">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/searchBar">
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/idAdmin"
+                android:layout_toLeftOf="@+id/idText"
+                android:layout_toRightOf="@+id/searchButton"
+                android:layout_marginLeft="30dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/idText"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:text="کد شناسه: "
+                android:layout_alignParentRight="true"
+                android:layout_alignBaseline="@+id/idAdmin" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/searchButton"
+                android:layout_alignParentLeft="true"
+                android:text="جستجو"
+                android:backgroundTint="@color/statusbar"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:onClick="search"/>
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/idTextview"
+                android:textSize="17sp"
+                android:text="کد شناسه: "
+                android:textStyle="bold"
+                android:layout_gravity="right"
+                android:layout_marginTop="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignBaseline="@+id/idCustomer"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/idCustomer"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:layout_gravity="right"
+                android:layout_marginTop="10dp"
+                android:layout_toLeftOf="@+id/idTextview"/>
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/nameText"
+                android:textSize="17sp"
+                android:text="نام: "
+                android:textStyle="bold"
+                android:layout_gravity="right"
+                android:layout_marginTop="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignBaseline="@+id/name"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/name"
+                android:textSize="17sp"
+                android:layout_gravity="right"
+                android:layout_marginTop="10dp"
+                android:layout_toLeftOf="@+id/nameText"
+                />
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/emailText"
+                android:textSize="17sp"
+                android:text="آدرس ایمیل: "
+                android:textStyle="bold"
+                android:layout_gravity="right"
+                android:layout_marginTop="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignBaseline="@+id/email"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/email"
+                android:textSize="17sp"
+                android:layout_gravity="right"
+                android:layout_marginTop="10dp"
+                android:layout_toLeftOf="@+id/emailText"/>
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/creditText"
+                android:textSize="17sp"
+                android:text="اعتبار: "
+                android:textStyle="bold"
+                android:layout_gravity="right"
+                android:layout_marginTop="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignBaseline="@+id/credit"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/credit"
+                android:textSize="17sp"
+                android:layout_gravity="right"
+                android:layout_marginTop="10dp"
+                android:layout_toLeftOf="@+id/creditText"/>
+
+        </RelativeLayout>
+
+        <CheckBox
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/isAciveCheckbox"
+            android:text="عضو فعال"
+            android:layoutDirection="rtl"
+            android:textSize="17sp"
+            android:layout_marginTop="10dp"/>
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".controller.activity.customer.FinalPaymentActivity"
+    android:orientation="vertical"
+    >
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/home_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/toolbar">
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="سبد خرید شما"
+            android:layout_marginRight="5dp"
+            android:textSize="20sp"
+            android:layout_alignParentRight="true"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/shoppingcartVector"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/ic_shopping_cart_black_24dp"
+            android:background="@android:color/transparent"
+            android:tint="@color/white"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:textColor="@color/white"
+            android:id="@+id/shoppingCartnum"
+            android:layout_toRightOf="@+id/shoppingcartVector"
+            />
+    </RelativeLayout>
+    </android.support.v7.widget.Toolbar>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/totalPrice"
+        android:layout_below="@+id/home_toolbar"
+        android:padding="10dp"
+        android:elevation="5dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="جمع کل خرید :"
+            android:textSize="17sp"
+            android:layout_alignParentRight="true"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/total"
+            android:textSize="17sp"
+            android:layout_alignParentLeft="true"
+            />
+    </RelativeLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/shoppingCartRecyclerview"
+        android:layout_above="@+id/payButton"
+        android:layout_below="@+id/totalPrice">
+
+    </android.support.v7.widget.RecyclerView>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/payButton"
+        android:layout_alignParentBottom="true"
+        android:background="@color/login"
+        android:textSize="17sp"
+        android:textColor="@color/white"
+        android:text="خرید خود را نهایی کنید"
+        android:visibility="invisible"/>
+
+</RelativeLayout>

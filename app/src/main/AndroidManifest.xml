@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.nazanin.store">
+
+    <application
+        android:name=".controller.FontManager"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".controller.activity.customer.ProductViewActivity" />
+        <activity android:name=".controller.activity.LoginActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".controller.activity.customer.SignupActivity" />
+        <activity android:name=".controller.activity.customer.ShoppingActivity" />
+        <activity android:name=".controller.activity.customer.FinalPaymentActivity" />
+        <activity android:name=".controller.activity.admin.AllCategoriesActivity" />
+        <activity android:name=".controller.activity.admin.InsertActivity" />
+        <activity android:name=".controller.activity.admin.UpdateActivity" />
+        <activity android:name=".controller.activity.admin.DeleteActivity" />
+        <activity android:name=".controller.activity.admin.AllCustomersActivity" />
+        <activity android:name=".controller.activity.customer.IncreaseCreditActivity" />
+        <activity android:name=".controller.activity.customer.ViewCustomerInfoActivity" />
+        <activity android:name=".controller.activity.admin.SearchCustomerActivity" />
+        <activity android:name=".controller.activity.admin.ProductSearchActivity" />
+        <activity android:name=".controller.activity.admin.ViewOrdersActivity" />
+        <activity android:name=".controller.activity.customer.ViewCategoriesActivity" />
+        <activity android:name=".controller.activity.customer.ProductListActivity" />
+        <activity android:name=".controller.activity.BestSellerActivity"></activity>
+    </application>
+
+</manifest>

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".controller.activity.admin.UpdateActivity">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/home_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/toolbar">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ویرایش کالا"
+            android:layout_gravity="right"
+            android:layout_marginRight="5dp"
+            android:textSize="20sp"
+            android:textColor="#fff"/>
+    </android.support.v7.widget.Toolbar>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="30dp"
+        android:layout_below="@+id/home_toolbar">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/searchBar">
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/id"
+                android:layout_toLeftOf="@+id/idText"
+                android:layout_toRightOf="@+id/searchButton"
+                android:layout_marginLeft="30dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/idText"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:text="کد شناسه: "
+                android:layout_alignParentRight="true"
+                android:layout_alignBaseline="@+id/id" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/searchButton"
+                android:backgroundTint="@color/statusbar"
+                android:textColor="@color/white"
+                android:layout_alignParentLeft="true"
+                android:text="جستجو"
+                android:textSize="16sp"
+                android:onClick="search" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/choosePhoto"
+                android:background="@drawable/roundcorner"
+                android:src="@drawable/ic_add_a_photo_black_24dp"
+                android:tint="@color/statusbar"
+                android:layout_alignParentLeft="true"
+                android:layout_alignBottom="@+id/productImage"
+                android:onClick="attachPhoto"
+                android:padding="5dp"
+                />
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:id="@+id/productImage"
+                android:background="@drawable/roundcorner"
+                android:layout_toRightOf="@+id/choosePhoto"
+                android:layout_marginLeft="10dp"
+                />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <EditText
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:gravity="right"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:layout_toLeftOf="@+id/nameText"
+                android:layout_alignBaseline="@+id/nameText"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/nameText"
+                android:text=" نام محصول: "
+                android:textSize="17sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_alignParentRight="true">
+
+            </TextView>
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <EditText
+                android:id="@+id/description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:gravity="right"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:layout_toLeftOf="@+id/desctext"
+                android:layout_alignBaseline="@+id/desctext"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/desctext"
+                android:text=" توضیحات: "
+                android:textSize="17sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_alignParentRight="true">
+
+            </TextView>
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <EditText
+                android:id="@+id/price"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:gravity="right"
+                android:inputType="numberDecimal"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:layout_toLeftOf="@+id/pricetext"
+                android:layout_alignBaseline="@+id/pricetext"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/pricetext"
+                android:text=" قیمت: "
+                android:textSize="17sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_alignParentRight="true">
+
+            </TextView>
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <EditText
+                android:id="@+id/stock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:inputType="numberDecimal"
+                android:gravity="right"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:layout_toLeftOf="@+id/stocktext"
+                android:layout_alignBaseline="@+id/stocktext"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/stocktext"
+                android:text=" موجودی: "
+                android:textSize="17sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_alignParentRight="true"/>
+
+        </RelativeLayout>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/infoLayout"
+            android:textSize="17sp"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/statusbar"
+            android:textColor="@color/white"
+            android:onClick="update"
+            android:text="اعمال تغییرات"/>
+    </LinearLayout>
+
+
+</RelativeLayout>

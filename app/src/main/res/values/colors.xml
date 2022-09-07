@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="login">#749af9</color>
+    <color name="signup">#ff6767</color>
+    <color name="toolbar">#5ca93c</color>
+    <color name="vectors">#8b8b8b</color>
+    <color name="white">#fff</color>
+    <color name="statusbar">#478e2d</color>
+    <color name="black">#000</color>
+    <color name="red">#e21010</color>
+</resources>

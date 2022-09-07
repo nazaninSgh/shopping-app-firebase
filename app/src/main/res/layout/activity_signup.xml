@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".controller.activity.customer.SignupActivity">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/home_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/toolbar">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ثبت نام"
+            android:layout_gravity="right"
+            android:layout_marginRight="5dp"
+            android:textSize="20sp"
+            android:textColor="#fff"/>
+    </android.support.v7.widget.Toolbar>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/fields"
+            >
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/name"
+                android:drawableRight="@drawable/ic_person_black_24dp"
+                android:drawablePadding="5dp"
+                android:textSize="16sp"
+                android:drawableTint="@color/vectors"
+                android:inputType="text"
+                android:hint="نام"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:gravity="right"
+                android:drawableRight="@drawable/ic_person_black_24dp"
+                android:drawablePadding="5dp"
+                android:drawableTint="@color/vectors"
+                android:layout_marginTop="10dp"
+                android:textSize="16sp"
+                android:id="@+id/lastname"
+                android:hint="نام خانوادگی"
+                />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/email"
+                android:drawableRight="@drawable/ic_email_black_24dp"
+                android:drawablePadding="5dp"
+                android:drawableTint="@color/vectors"
+                android:layout_marginTop="10dp"
+                android:textSize="16sp"
+                android:inputType="textEmailAddress"
+                android:hint="ایمیل"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:gravity="right"
+                android:layout_marginTop="10dp"
+                android:drawableTint="@color/vectors"
+                android:drawableRight="@drawable/ic_lock_black_24dp"
+                android:drawablePadding="5dp"
+                android:textSize="16sp"
+                android:id="@+id/password"
+                android:hint="رمز عبور"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:gravity="right"
+                android:layout_marginTop="10dp"
+                android:drawableTint="@color/vectors"
+                android:drawableRight="@drawable/ic_repeat_black_24dp"
+                android:drawablePadding="5dp"
+                android:textSize="16sp"
+                android:id="@+id/passwordAgain"
+                android:hint="تکرار رمز عبور"/>
+
+        </LinearLayout>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/fields"
+            android:text="ثبت نام"
+            android:textSize="20sp"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/signup"
+            android:layout_marginTop="30dp"
+            android:id="@+id/signup"
+            android:onClick="signupConfirmation"
+            />
+    </RelativeLayout>
+
+
+
+</RelativeLayout>

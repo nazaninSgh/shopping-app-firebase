@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/viewMyInfo"
+            android:icon="@drawable/ic_person_black_24dp"
+            android:title="مشاهده اطلاعات کاربری"/>
+
+        <item android:id="@+id/viewShoppingCart"
+            android:icon="@drawable/ic_shopping_cart_black_24dp"
+            android:title="مشاهده سبد خرید"/>
+
+        <item android:id="@+id/increaseCredit"
+            android:icon="@drawable/ic_credit_card_black_24dp"
+            android:title="افزایش اعتبار"/>
+
+    </group>
+    <group android:id="@+id/viewlists">
+        <item android:id="@+id/viewCategoryList"
+            android:icon="@drawable/ic_list_black_24dp"
+            android:title="مشاهده دسته بندی لیست محصولات"/>
+    </group>
+    <group android:id="@+id/bestSeller">
+        <item android:id="@+id/viewBestSeller"
+            android:icon="@drawable/ic_star_black_24dp"
+            android:title="پرفروش ترین ها"/>
+    </group>
+
+</menu>
