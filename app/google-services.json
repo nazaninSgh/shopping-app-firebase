@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "1072827554886",
+    "firebase_url": "https://fir-demo-adc8c-default-rtdb.firebaseio.com",
+    "project_id": "fir-demo-adc8c",
+    "storage_bucket": "fir-demo-adc8c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1072827554886:android:14f8f5dec99c642a21be47",
+        "android_client_info": {
+          "package_name": "com.example.nazanin.myfirebaseapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-eCC1cYkcJ8Mkv8r4sxdVVZaKPaBTXYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1072827554886:android:242265e88a0d511d21be47",
+        "android_client_info": {
+          "package_name": "com.example.nazanin.storefirebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-eCC1cYkcJ8Mkv8r4sxdVVZaKPaBTXYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
