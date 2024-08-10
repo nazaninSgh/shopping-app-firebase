@@ -1,1 +1,1 @@
-# offline-store-app
+# shopping-app-firebase
