@@ -3,6 +3,7 @@ package com.example.nazanin.storefirebase.controller.activity.customer;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +18,9 @@ import com.example.nazanin.storefirebase.model.DAO.ShoppingCartManager;
 import com.example.nazanin.storefirebase.model.DTO.Customer;
 import com.example.nazanin.storefirebase.model.DTO.Product;
 import com.example.nazanin.storefirebase.model.DTO.ShoppingCart;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.squareup.picasso.Picasso;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -64,10 +68,10 @@ public class ShoppingActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void showProductInfo(){
-       productImage.setImageBitmap(FileManager.getBitmapImage(product.getImage()));
-       productName.setText(product.getProductName());
-       description.setText(product.getDescription());
-       price.setText(String.valueOf(product.getPrice()));
+        Picasso.get().load(product.getImage()).into(productImage);
+        productName.setText(product.getProductName());
+        description.setText(product.getDescription());
+        price.setText(String.valueOf(product.getPrice()));
     }
 
     private void openInactiveDialog(){
@@ -84,12 +88,18 @@ public class ShoppingActivity extends AppCompatActivity implements View.OnClickL
             shoppingCart.setProduct_id(product.getId());
             shoppingCart.setQuantity(1);
             shoppingCart.setTotalPrice(product.getPrice());
-            manager.addToShoppingCart(shoppingCart);
-            Intent intent = new Intent(this, FinalPaymentActivity.class);
-            intent.putExtra("product", product);
-            intent.putExtra("customer", customer);
-            startActivity(intent);
-            finish();
+            manager.addToShoppingCart(shoppingCart, new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()){
+                        Intent intent = new Intent(ShoppingActivity.this, FinalPaymentActivity.class);
+                        intent.putExtra("product", product);
+                        intent.putExtra("customer", customer);
+                        startActivity(intent);
+                        finish();
+                    }
+                }
+            });
         }
         else {
             openInactiveDialog();

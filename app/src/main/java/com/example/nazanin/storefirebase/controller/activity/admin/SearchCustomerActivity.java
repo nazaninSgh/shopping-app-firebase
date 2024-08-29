@@ -13,6 +13,7 @@ import com.example.nazanin.storefirebase.R;
 import com.example.nazanin.storefirebase.controller.fragment.dialogFragments.ActiveChangeDialogFragment;
 import com.example.nazanin.storefirebase.model.DAO.CustomerManager;
 import com.example.nazanin.storefirebase.model.DTO.Customer;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -45,13 +46,18 @@ public class SearchCustomerActivity extends AppCompatActivity implements View.On
     public void search(View view){
         String id = idAdmin.getText().toString();
         CustomerManager customerManager = new CustomerManager(this);
-        customer=customerManager.searchCustomerById(id);
-        if (customer!=null) {
-            showCustomerInfo();
-        }
-        else {
-            Toast.makeText(this,"کاربر مورد نظر یافت نشد",Toast.LENGTH_SHORT).show();
-        }
+        customerManager.searchCustomerById(id, new OnSuccessListener<Customer>() {
+            @Override
+            public void onSuccess(Customer customer) {
+                if (customer!=null) {
+                    showCustomerInfo();
+                }
+                else {
+                    Toast.makeText(SearchCustomerActivity.this,"کاربر مورد نظر یافت نشد",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
     }
 
     private void showCustomerInfo(){

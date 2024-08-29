@@ -16,12 +16,12 @@ import com.example.nazanin.storefirebase.model.DAO.CustomerManager;
 public class ActiveChangeDialogFragment extends AppCompatDialogFragment {
     private boolean ifchecked;
     private TextView ask;
-    private int customer_id;
+    private String customer_id;
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         ifchecked=getArguments().getBoolean("ifchecked");
-        customer_id=getArguments().getInt("id");
+        customer_id=getArguments().getString("id");
         AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
         LayoutInflater inflater=getActivity().getLayoutInflater();
         View view=inflater.inflate(R.layout.fragment_change_active_state_dialog,null);

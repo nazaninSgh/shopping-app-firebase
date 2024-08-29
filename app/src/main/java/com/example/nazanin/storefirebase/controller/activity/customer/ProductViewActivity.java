@@ -28,6 +28,7 @@ import com.example.nazanin.storefirebase.model.DAO.ProductManager;
 import com.example.nazanin.storefirebase.model.DAO.ShoppingCartManager;
 import com.example.nazanin.storefirebase.model.DTO.Customer;
 import com.example.nazanin.storefirebase.model.DTO.ShoppingCart;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 
@@ -84,11 +85,15 @@ public class ProductViewActivity extends AppCompatActivity implements Navigation
         toolbar=findViewById(R.id.home_toolbar);
         //set shopping cart quantity in toolbar
         manager=new ShoppingCartManager(this);
-        int count=manager.getShoppingCartCount(customer.getId());
+        manager.getShoppingCartCount(customer.getId(), new OnSuccessListener<Integer>() {
+            @Override
+            public void onSuccess(Integer count) {
+                if (count>0){
+                    shoppingCartQuantity.setText(String.valueOf(count));
+                }
+            }
+        });
 
-        if (count>0){
-            shoppingCartQuantity.setText(String.valueOf(count));
-        }
         //navigation menu header
         View header=navigationView.getHeaderView(0);
         fullnameTextView=header.findViewById(R.id.fullname);
@@ -205,16 +210,26 @@ public class ProductViewActivity extends AppCompatActivity implements Navigation
     @Override
     protected void onResume() {
         super.onResume();
-        int count=manager.getShoppingCartCount(customer.getId());
-        if (count>0){
-            shoppingCartQuantity.setText(String.valueOf(count));
-        }
-        else {
-            shoppingCartQuantity.setText("");
-        }
-        if (orderSaved){
-            customer=customerManager.searchCustomerById(customer.getId());
-        }
+        manager.getShoppingCartCount(customer.getId(), new OnSuccessListener<Integer>() {
+            @Override
+            public void onSuccess(Integer count) {
+                if (count>0){
+                    shoppingCartQuantity.setText(String.valueOf(count));
+                }
+                else {
+                    shoppingCartQuantity.setText("");
+                }
+                if (orderSaved){
+                    customerManager.searchCustomerById(customer.getId(), new OnSuccessListener<Customer>() {
+                        @Override
+                        public void onSuccess(Customer customerObj) {
+                            customer = customerObj;
+                        }
+                    });
+                }
+            }
+        });
+
     }
 
     public void viewShoppingCart(View view) {

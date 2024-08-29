@@ -41,7 +41,7 @@ public class ViewCategoriesActivity extends AppCompatActivity implements Adapter
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent=new Intent(ViewCategoriesActivity.this,ProductListActivity.class);
-        intent.putExtra("category_id",position+1);
+        intent.putExtra("category_id",String.valueOf(position));
         intent.putExtra("customer",customer);
         startActivity(intent);
     }

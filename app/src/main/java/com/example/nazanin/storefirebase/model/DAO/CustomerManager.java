@@ -1,10 +1,7 @@
 package com.example.nazanin.storefirebase.model.DAO;
 
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
 
@@ -33,22 +30,14 @@ public class CustomerManager {
     private Context context;
     private FirebaseDatabase database;
     private DatabaseReference reference;
-    DbHelper dbHelper;
-    SQLiteDatabase db;
-    private int id;
-    private Customer customer;
-    public static final String CREATE_TABLE_CUSTOMERS="CREATE TABLE CUSTOMERS (ID INTEGER PRIMARY KEY AUTOINCREMENT,NAME TEXT,LASTNAME TEXT,EMAIL TEXT,PASSWORD TEXT,CREDIT INTEGER,ISACTIVE INTEGER)";
 
-
-    public CustomerManager(Context context){
-        this.context=context;
-
-        database = FirebaseDatabase.getInstance("https://fir-demo-adc8c-default-rtdb.firebaseio.com/");
+    public CustomerManager(Context context) {
+        this.context = context;
     }
 
     public void insertCustomerData(Customer customer,OnSuccessListener<Void> onSuccessListener){
         customer.setCredit(0);
-        customer.setActive(false);
+        customer.setActive(true);
         DocumentReference reference = FirebaseFirestore.getInstance().collection("customers").document();
         String id = reference.getId();
         customer.setId(id);
@@ -79,81 +68,75 @@ public class CustomerManager {
                     listener.onSuccess(customer);
                     //taskCompletionSource.setResult(customer);
                 } else {
-                   // taskCompletionSource.setException(task.getException() != null ?
-                       //     task.getException() : new Exception("Product not found"));
+                    // taskCompletionSource.setException(task.getException() != null ?
+                    //     task.getException() : new Exception("Product not found"));
 
                 }
             }
         });
     }
 
+    public void updateCustomerCredit(Customer customer,OnSuccessListener listener){
+        FirebaseFirestore.getInstance().collection("customers").document(customer.getId())
+                .update("credit",customer.getCredit()).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(context,"credit successfully updated",Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(context,"problem while updating your credit",Toast.LENGTH_SHORT).show();
+                }
 
-    public Customer getThatCustomer(){
-        db=dbHelper.getReadableDatabase();
-        customer=new Customer();
-        Cursor customerCursor=db.rawQuery("SELECT * FROM CUSTOMERS WHERE ID="+id,null);
-        if (customerCursor.moveToFirst()) {
-           // customer.setId(customerCursor.getInt(customerCursor.getColumnIndex("ID")));
-            customer.setName(customerCursor.getString(customerCursor.getColumnIndex("NAME")));
-            customer.setLastname(customerCursor.getString(customerCursor.getColumnIndex("LASTNAME")));
-            customer.setEmail(customerCursor.getString(customerCursor.getColumnIndex("EMAIL")));
-            customer.setCredit(customerCursor.getInt(customerCursor.getColumnIndex("CREDIT")));
-            customer.setActive(customerCursor.getInt(customerCursor.getColumnIndex("ISACTIVE")) == 1 ? true : false);
-
-        }
-        customerCursor.close();
-        return customer;
-    }
-
-    public void updateCustomerCredit(Customer customer){
-        db=dbHelper.getWritableDatabase();
-        ContentValues values=new ContentValues();
-        values.put("CREDIT",customer.getCredit());
-        db.update("CUSTOMERS",values,"ID="+customer.getId(),null);
-    }
-
-    public void updateCustomerActiveState(int id,boolean isActive){
-        db=dbHelper.getWritableDatabase();
-        ContentValues values=new ContentValues();
-        values.put("ISACTIVE",isActive ? 1:0);
-        db.update("CUSTOMERS",values,"ID="+id,null);
-    }
-
-    public ArrayList<Customer> getAllCustomers(){
-        reference = database.getReference("customer");
-
-        ArrayList<Customer> customers=new ArrayList<>();
-        db=dbHelper.getReadableDatabase();
-        Cursor customerCursor=db.rawQuery("SELECT * FROM CUSTOMERS",null);
-        if (customerCursor.moveToFirst()) {
-            while (!customerCursor.isAfterLast()) {
-                customer=new Customer();
-               // customer.setId(customerCursor.getInt(customerCursor.getColumnIndex("ID")));
-                customer.setName(customerCursor.getString(customerCursor.getColumnIndex("NAME")));
-                customer.setLastname(customerCursor.getString(customerCursor.getColumnIndex("LASTNAME")));
-                customer.setEmail(customerCursor.getString(customerCursor.getColumnIndex("EMAIL")));
-                customer.setActive(customerCursor.getInt(customerCursor.getColumnIndex("ISACTIVE")) == 1 ? true : false);
-                customers.add(customer);
-                customerCursor.moveToNext();
             }
-        }
-        customerCursor.close();
-        return customers;
+        });
     }
 
-    public Customer searchCustomerById(String id){
-        db=dbHelper.getReadableDatabase();
-        Cursor customerCursor=db.rawQuery("SELECT * FROM CUSTOMERS WHERE ID="+id,null);
-        if (customerCursor.moveToFirst()) {
-            customer=new Customer();
-           // customer.setId(customerCursor.getInt(customerCursor.getColumnIndex("ID")));
-            customer.setName(customerCursor.getString(customerCursor.getColumnIndex("NAME")));
-            customer.setLastname(customerCursor.getString(customerCursor.getColumnIndex("LASTNAME")));
-            customer.setEmail(customerCursor.getString(customerCursor.getColumnIndex("EMAIL")));
-            customer.setCredit(customerCursor.getInt(customerCursor.getColumnIndex("CREDIT")));
-            customer.setActive(customerCursor.getInt(customerCursor.getColumnIndex("ISACTIVE"))==1 ? true:false);
-        }
-        customerCursor.close();
-        return customer;
+    public void updateCustomerActiveState(String id,boolean isActive){
+        FirebaseFirestore.getInstance().collection("customers").document(id)
+                .update("isactive",isActive).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(context,"active status successfully updated",Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(context,"problem while updating your active status",Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+    }
+
+    public void getAllCustomers(final OnSuccessListener<ArrayList<Customer>> listener){
+        final ArrayList<Customer> customers=new ArrayList<>();
+        FirebaseFirestore.getInstance().collection("customers").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()){
+                    for (QueryDocumentSnapshot snapshot: task.getResult()){
+                        customers.add(snapshot.toObject(Customer.class));
+                    }
+                    listener.onSuccess(customers);
+                }
+                else {
+                    Toast.makeText(context,"problem while retrieving customers",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    public void searchCustomerById(String id,final OnSuccessListener<Customer> listener) {
+        FirebaseFirestore.getInstance().collection("customers").document(id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot snapshot = task.getResult();
+                    listener.onSuccess(snapshot.toObject(Customer.class));
+                } else {
+                    Toast.makeText(context, "problem while retrieving customer", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 }

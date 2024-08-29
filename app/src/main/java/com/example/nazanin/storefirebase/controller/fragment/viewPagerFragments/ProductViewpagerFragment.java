@@ -42,9 +42,9 @@ public class ProductViewpagerFragment extends Fragment {
         View view=inflater.inflate(R.layout.fragment_product_list, container, false);
         customer=getArguments().getParcelable("customer");
         productListview=view.findViewById(R.id.productListview);
-        int position=getArguments().getInt("position");
+        String position=String.valueOf(getArguments().getInt("position"));
         productManager=new ProductManager(getContext());
-        productManager.getNewestProducts(String.valueOf(position), new OnSuccessListener<ArrayList<Product>>() {
+        productManager.getNewestProducts(position, new OnSuccessListener<ArrayList<Product>>() {
             @Override
             public void onSuccess(ArrayList<Product> allproducts) {
                 products = allproducts;

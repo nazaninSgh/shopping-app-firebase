@@ -1,6 +1,7 @@
 package com.example.nazanin.storefirebase.controller.activity.customer;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -21,6 +22,9 @@ import com.example.nazanin.storefirebase.model.DAO.ProductManager;
 import com.example.nazanin.storefirebase.model.DAO.ShoppingCartManager;
 import com.example.nazanin.storefirebase.model.DTO.Customer;
 import com.example.nazanin.storefirebase.model.DTO.ShoppingCart;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 
@@ -47,25 +51,30 @@ public class FinalPaymentActivity extends AppCompatActivity implements ShoppingC
         setContentView(R.layout.activity_final_payment);
         customer=getIntent().getExtras().getParcelable("customer");
         manager=new ShoppingCartManager(this);
-        shoppingCarts = manager.getShoppingCartList(customer.getId());
+        manager.getShoppingCartList(customer.getId(), new OnSuccessListener<ArrayList<ShoppingCart>>() {
+            @Override
+            public void onSuccess(ArrayList<ShoppingCart> shoppingCarts) {
+                quantity=shoppingCarts.size();
+                if (quantity>0) {
+                    shoppingcartQuantity.setText(String.valueOf(quantity));
+                }
+                ShoppingCartAdapter adapter = new ShoppingCartAdapter(shoppingCarts, FinalPaymentActivity.this);
+                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+                recyclerView.setLayoutManager(mLayoutManager);
+                recyclerView.setItemAnimator(new DefaultItemAnimator());
+                recyclerView.setAdapter(adapter);
+                adapter.setOnItemClickListener(FinalPaymentActivity.this);
+                if (quantity>0){
+                    pay.setOnClickListener(FinalPaymentActivity.this);
+                    pay.setVisibility(View.VISIBLE);
+                }
+
+            }
+        });
         pay=findViewById(R.id.payButton);
         totalPriceTextview=findViewById(R.id.total);
         shoppingcartQuantity=findViewById(R.id.shoppingCartnum);
         recyclerView = findViewById(R.id.shoppingCartRecyclerview);
-        quantity=shoppingCarts.size();
-        if (quantity>0) {
-            shoppingcartQuantity.setText(String.valueOf(quantity));
-        }
-        ShoppingCartAdapter adapter = new ShoppingCartAdapter(shoppingCarts, this);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(adapter);
-        adapter.setOnItemClickListener(this);
-        if (quantity>0){
-            pay.setOnClickListener(this);
-            pay.setVisibility(View.VISIBLE);
-        }
 
     }
 
@@ -78,30 +87,41 @@ public class FinalPaymentActivity extends AppCompatActivity implements ShoppingC
         CreditDialogFragment fragment=new CreditDialogFragment();
         fragment.show(getSupportFragmentManager(),"lowCredit");
     }
-    private int calTotalPayment(){
-       return manager.getTotalPayment(customer.getId());
-    }
+   // private int calTotalPayment(){
+
+   // }
 
 
     @Override
-    public void updateShoppingDetails(int position) {
-        ShoppingCartManager manager=new ShoppingCartManager(this);
-        manager.deleteFromShoppingCart(shoppingCarts.get(position).getId());
-        shoppingCarts.remove(position);
-        totalPrice=calTotalPayment();
-        quantity=shoppingCarts.size();
-        if (quantity>0) {
-            shoppingcartQuantity.setText(String.valueOf(quantity));
-        }
-        else {
-            shoppingcartQuantity.setText("");
-        }
-        totalPriceTextview.setText(String.valueOf(totalPrice));
+    public void updateShoppingDetails(final int position) {
+        final ShoppingCartManager manager=new ShoppingCartManager(this);
+        manager.deleteFromShoppingCart(shoppingCarts.get(position).getId(), new OnCompleteListener() {
+            @Override
+            public void onComplete(@NonNull Task task) {
+                shoppingCarts.remove(position);
+                manager.getTotalPayment(customer.getId(), new OnSuccessListener<Integer>() {
+                    @Override
+                    public void onSuccess(Integer price) {
+                        totalPrice = price;
+                        quantity=shoppingCarts.size();
+                        if (quantity>0) {
+                            shoppingcartQuantity.setText(String.valueOf(quantity));
+                        }
+                        else {
+                            shoppingcartQuantity.setText("");
+                        }
+                        totalPriceTextview.setText(String.valueOf(totalPrice));
+                    }
+                });
+
+            }
+        });
+
     }
 
     @Override
     public void updateTotalPaymentDetails() {
-        totalPrice=calTotalPayment();
+        //totalPrice=calTotalPayment();
         totalPriceTextview.setText(String.valueOf(totalPrice));
     }
 
@@ -112,20 +132,30 @@ public class FinalPaymentActivity extends AppCompatActivity implements ShoppingC
             if (customer.getCredit() >= totalPrice) {
                 OrderManager orderManager = new OrderManager(this);
                 //add to order
-                for (ShoppingCart shoppingCartItem : shoppingCarts) {
+                for (final ShoppingCart shoppingCartItem : shoppingCarts) {
                     orderManager.addToOrders(shoppingCartItem);
                     ProductViewActivity.orderSaved = true;
                     ShoppingCartManager shoppingCartManager = new ShoppingCartManager(this);
                     shoppingCartItem.setConfirm_status(true);
-                    shoppingCartManager.updateStatus(shoppingCartItem);
-                    ProductManager productManager = new ProductManager(this);
-                    productManager.updateStock(shoppingCartItem);
+                    shoppingCartManager.updateStatus(shoppingCartItem, new OnSuccessListener() {
+                        @Override
+                        public void onSuccess(Object o) {
+                            ProductManager productManager = new ProductManager(FinalPaymentActivity.this);
+                            productManager.updateStock(shoppingCartItem, true);
+                        }
+                    });
+
                 }
                 CustomerManager manager = new CustomerManager(this);
                 customer.setCredit(customer.getCredit() - totalPrice);
-                manager.updateCustomerCredit(customer);
-                Toast.makeText(this, "سفارش شما با موفقیت ثبت شد", Toast.LENGTH_SHORT).show();
-                finish();
+                manager.updateCustomerCredit(customer, new OnSuccessListener() {
+                    @Override
+                    public void onSuccess(Object o) {
+                        Toast.makeText(FinalPaymentActivity.this, "سفارش شما با موفقیت ثبت شد", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                });
+
             }
             else {
                 openLowCreditDialog();

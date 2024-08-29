@@ -12,18 +12,22 @@ public class Product implements Parcelable {
     private String image;
     private String category_id;
     private String date;
+    private int salesCount;
 
     public Product(){
 
     }
 
-    public Product(String productName, String description, int price,int stock, String image, String category_id) {
+    public Product(String id, String productName, String description, int stock, int price, String image, String category_id, String date, int salesCount) {
+        this.id = id;
         this.productName = productName;
         this.description = description;
         this.stock = stock;
         this.price = price;
         this.image = image;
         this.category_id = category_id;
+        this.date = date;
+        this.salesCount = salesCount;
     }
 
     public String getId() {
@@ -90,6 +94,14 @@ public class Product implements Parcelable {
         this.date = date;
     }
 
+    public int getSalesCount() {
+        return salesCount;
+    }
+
+    public void setSalesCount(int salesCount) {
+        this.salesCount = salesCount;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -104,6 +116,7 @@ public class Product implements Parcelable {
         dest.writeInt(this.price);
         dest.writeString(this.image);
         dest.writeString(this.category_id);
+        dest.writeInt(this.salesCount);
     }
 
     protected Product(Parcel in) {
@@ -114,6 +127,7 @@ public class Product implements Parcelable {
         this.price = in.readInt();
         this.image = in.readString();
         this.category_id = in.readString();
+        this.salesCount = in.readInt();
     }
 
     public static final Parcelable.Creator<Product> CREATOR = new Parcelable.Creator<Product>() {

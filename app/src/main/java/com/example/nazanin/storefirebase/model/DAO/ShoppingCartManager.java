@@ -1,127 +1,214 @@
 package com.example.nazanin.storefirebase.model.DAO;
 
-import android.content.ContentValues;
+
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
+import android.widget.Toast;
 
 import com.example.nazanin.storefirebase.model.DTO.ShoppingCart;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+//import com.google.firebase.firestore.AggregateQuerySnapshot;
+//import com.google.firebase.firestore.AggregateSource;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+//import com.google.firebase.firestore.AggregateField;
+//import com.google.firebase.firestore.AggregateQuery;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ShoppingCartManager {
     private Context context;
-    private DbHelper dbHelper;
+    private FirebaseFirestore firestore;
     private ShoppingCart shoppingCart;
     private ArrayList<ShoppingCart> shoppingCarts;
-    public SQLiteDatabase db;
-    public static final String CREATE_TABLE_SHOPPING_CART="CREATE TABLE SHOPPING_CART (ID INTEGER PRIMARY KEY AUTOINCREMENT,CUSTOMER_ID INTEGER,PRODUCT_ID INTEGER,QUANTITY INTEGER,TOTAL_PRICE INTEGER,CONFIRM_STATUS INTEGER,SENT_STATUS INTEGER)";
 
     public ShoppingCartManager(Context context){
         this.context=context;
-        dbHelper=new DbHelper(context);
+        firestore = FirebaseFirestore.getInstance();
     }
 
 
-    public void addToShoppingCart(ShoppingCart shoppingCart){
-        if (!isDuplicate(shoppingCart)) {
-            db = dbHelper.getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("customer_id", shoppingCart.getCustomer_id());
-            values.put("product_id", shoppingCart.getProduct_id());
-            values.put("quantity", shoppingCart.getQuantity());
-            values.put("total_price", shoppingCart.getTotalPrice());
-            values.put("confirm_status", shoppingCart.isConfirm_status() ? 1 : 0);
-            values.put("sent_status", shoppingCart.isSent_status() ? 1 : 0);
-            db.insert("SHOPPING_CART", null, values);
-        }
-    }
-
-    private boolean isDuplicate(ShoppingCart shoppingCart){
-        db=dbHelper.getReadableDatabase();
-        Cursor cursor=db.rawQuery("SELECT ID FROM SHOPPING_CART WHERE CONFIRM_STATUS=0 AND SENT_STATUS=0 AND CUSTOMER_ID="+shoppingCart.getCustomer_id()+" AND PRODUCT_ID="+shoppingCart.getProduct_id(),null);
-        if (cursor!=null && cursor.moveToFirst() && cursor.getCount()>0) {
-        //    Toast.makeText(context,String.valueOf(cursor.getInt(cursor.getColumnIndex("ID"))),Toast.LENGTH_SHORT).show();
-            return true;
-        }
-        return false;
-    }
-
-    public int getShoppingCartCount(String id){
-        int count=0;
-        db=dbHelper.getReadableDatabase();
-        Cursor cursor=db.rawQuery("SELECT * FROM SHOPPING_CART WHERE CUSTOMER_ID="+id+" AND CONFIRM_STATUS=0",null);
-        cursor.moveToFirst();
-        count=cursor.getCount();
-        cursor.close();
-        return count;
-    }
-
-    public ArrayList<ShoppingCart> getShoppingCartList(String customer_id){
-        shoppingCarts=new ArrayList<>();
-        db=dbHelper.getReadableDatabase();
-        Cursor cursor=db.rawQuery("SELECT * FROM SHOPPING_CART WHERE CUSTOMER_ID="+customer_id+" AND CONFIRM_STATUS=0",null);
-        if (cursor.moveToFirst()) {
-            while (!cursor.isAfterLast()) {
-                shoppingCart = new ShoppingCart();
-//                shoppingCart.setId(cursor.getInt(cursor.getColumnIndex("ID")));
-//                shoppingCart.setCustomer_id(cursor.getInt(cursor.getColumnIndex("CUSTOMER_ID")));
-//                shoppingCart.setProduct_id(cursor.getInt(cursor.getColumnIndex("PRODUCT_ID")));
-                shoppingCart.setQuantity(cursor.getInt(cursor.getColumnIndex("QUANTITY")));
-                shoppingCart.setTotalPrice(cursor.getInt(cursor.getColumnIndex("TOTAL_PRICE")));
-                shoppingCart.setConfirm_status(cursor.getInt(cursor.getColumnIndex("CONFIRM_STATUS")) == 1 ? true : false);
-                shoppingCarts.add(shoppingCart);
-                cursor.moveToNext();
+    public void addToShoppingCart(final ShoppingCart shoppingCart, OnCompleteListener<Void> listener){
+        isDuplicate(shoppingCart, new OnSuccessListener<Boolean>() {
+            @Override
+            public void onSuccess(Boolean duplicate) {
+                if (!duplicate){
+                    Map<String,Object> shopping_cart = new HashMap<>();
+                    shopping_cart.put("customer_id", shoppingCart.getCustomer_id());
+                    shopping_cart.put("product_id", shoppingCart.getProduct_id());
+                    shopping_cart.put("quantity", shoppingCart.getQuantity());
+                    shopping_cart.put("total_price", shoppingCart.getTotalPrice());
+                    shopping_cart.put("confirm_status", shoppingCart.isConfirm_status() ? 1 : 0);
+                    shopping_cart.put("sent_status", shoppingCart.isSent_status() ? 1 : 0);
+                    DocumentReference reference = firestore.collection("shopping_cart").document();
+                    shoppingCart.setId(reference.getId());
+                    reference.set(shopping_cart).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()){
+                                Toast.makeText(context,"added to shopping cart successfully",Toast.LENGTH_SHORT).show();
+                            }
+                            else {
+                                Toast.makeText(context,"problem while updating the shopping cart",Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
+                else {
+                    Toast.makeText(context,"duplicate record found",Toast.LENGTH_SHORT).show();
+                }
             }
-        }
-        return shoppingCarts;
+        });
     }
 
-    public void deleteFromShoppingCart(String id){
-        db=dbHelper.getWritableDatabase();
-        db.delete("SHOPPING_CART","ID="+id,null);
+    private void isDuplicate(ShoppingCart shoppingCart, final OnSuccessListener<Boolean> listener){
+
+        firestore.collection("shopping_cart").whereEqualTo("confirm_status",0)
+                .whereEqualTo("sent_status",0).whereEqualTo("customer_id",shoppingCart.getCustomer_id())
+                .whereEqualTo("product_id",shoppingCart.getProduct_id()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.getResult().size() == 0){
+                    listener.onSuccess(false);
+                }
+                else{
+                    listener.onSuccess(true);
+                }
+            }
+        });
     }
 
-    public void updatePaymentDetails(ShoppingCart shoppingCart){
-        db=dbHelper.getWritableDatabase();
-     //   Toast.makeText(context,String.valueOf(shoppingCart.getQuantity()+"     "+shoppingCart.getProduct_id()+"     "+shoppingCart.getCustomer_id()),Toast.LENGTH_SHORT).show();
-        ContentValues values=new ContentValues();
-        values.put("quantity",shoppingCart.getQuantity());
-        values.put("total_price",shoppingCart.getTotalPrice());
-        db.update("SHOPPING_CART",values,"ID="+shoppingCart.getId(),null);
+    public void getShoppingCartCount(String id,final OnSuccessListener<Integer> listener){
+        firestore.collection("shopping_cart").whereEqualTo("customer_id",id).whereEqualTo("confirm_status",0)
+                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()){
+                    listener.onSuccess(task.getResult().size());
+                }
+            }
+        });
     }
 
-    public int getTotalPayment(String id){
-        db=dbHelper.getReadableDatabase();
-        int totalPrice=0;
-        Cursor cursor=db.rawQuery("SELECT SUM(TOTAL_PRICE) AS TOTAL FROM SHOPPING_CART WHERE CUSTOMER_ID="+id+" AND CONFIRM_STATUS=0",null);
-        if(cursor.moveToFirst()){
-
-            totalPrice=cursor.getInt(cursor.getColumnIndex("TOTAL"));
-        //    Toast.makeText(context,String.valueOf(totalPrice),Toast.LENGTH_SHORT).show();
-        }
-        return totalPrice;
+    public void getShoppingCartList(String customer_id, final OnSuccessListener<ArrayList<ShoppingCart>> listener){
+        shoppingCarts=new ArrayList<>();
+        firestore.collection("shopping_cart").whereEqualTo("customer_id",customer_id)
+                .whereEqualTo("confirm_status",0).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()){
+                    for(QueryDocumentSnapshot snapshot:task.getResult()){
+                        shoppingCarts.add(snapshot.toObject(ShoppingCart.class));
+                    }
+                    listener.onSuccess(shoppingCarts);
+                }
+                else {
+                    Toast.makeText(context,"problem while getting the shopping carts",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
-    public ShoppingCart giveShoppingCart(int id){
-        db=dbHelper.getReadableDatabase();
-        Cursor cursor=db.rawQuery("SELECT * FROM SHOPPING_CART WHERE ID="+id,null);
-        if (cursor.moveToFirst()) {
-            shoppingCart = new ShoppingCart();
-//            shoppingCart.setId(cursor.getInt(cursor.getColumnIndex("ID")));
-//            shoppingCart.setCustomer_id(cursor.getInt(cursor.getColumnIndex("CUSTOMER_ID")));
-//            shoppingCart.setProduct_id(cursor.getInt(cursor.getColumnIndex("PRODUCT_ID")));
-            shoppingCart.setQuantity(cursor.getInt(cursor.getColumnIndex("QUANTITY")));
-            shoppingCart.setTotalPrice(cursor.getInt(cursor.getColumnIndex("TOTAL_PRICE")));
-            shoppingCart.setConfirm_status(cursor.getInt(cursor.getColumnIndex("CONFIRM_STATUS")) == 1 ? true : false);
-        }
-        return shoppingCart;
+    public void deleteFromShoppingCart(String id, OnCompleteListener listener){
+        firestore.collection("shopping_cart").document(id).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(context,"shopping cart deleted successfully",Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(context,"problem while deleting the shopping cart",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
-    public void updateStatus(ShoppingCart shoppingCart){
-        db=dbHelper.getWritableDatabase();
-        ContentValues values=new ContentValues();
+    public void updatePaymentDetails(ShoppingCart shoppingCart,OnCompleteListener listener) {
+        Map<String, Object> values = new HashMap<>();
+        values.put("quantity", shoppingCart.getQuantity());
+        values.put("total_price", shoppingCart.getTotalPrice());
+        firestore.collection("shopping_cart").document(shoppingCart.getCustomer_id())
+                .update(values).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(context,"shopping cart updated successfully",Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(context,"problem while updating the shopping cart",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    public void getTotalPayment(String id, final OnSuccessListener<Integer> listener){
+        firestore.collection("shopping_cart").whereEqualTo("customer_id",id)
+                .whereEqualTo("confirm_status",0).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    int sum = 0;
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        int total = Integer.parseInt(document.getString("total_price"));
+                        sum = sum + total;
+                    }
+                    listener.onSuccess(sum);
+                }
+            }
+        });
+
+//        AggregateQuery aggregateQuery = query.aggregate(AggregateField.sum("total_price"));
+//        aggregateQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
+//            @Override
+//            public void onComplete(Task<AggregateQuerySnapshot> task) {
+//                if (task.isSuccessful()){
+//                    AggregateQuerySnapshot snapshot = task.getResult();
+//                    listener.onSuccess((Integer) snapshot.get(AggregateField.sum("total_price")));
+//                }
+//            }
+//        });
+    }
+
+    public void giveShoppingCart(String id, final OnSuccessListener<ShoppingCart> listener){
+        firestore.collection("shopping_cart").whereEqualTo("id",id).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()){
+                    for(QueryDocumentSnapshot snapshot:task.getResult()){
+                        shoppingCart = snapshot.toObject(ShoppingCart.class);
+                    }
+                    listener.onSuccess(shoppingCart);
+                }
+                else {
+                    Toast.makeText(context,"problem while getting the shopping cart",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    public void updateStatus(ShoppingCart shoppingCart, OnSuccessListener listener){
+        Map<String, Object> values = new HashMap<>();
         values.put("confirm_status",shoppingCart.isConfirm_status() ? 1:0);
-        db.update("SHOPPING_CART",values,"ID="+shoppingCart.getId(),null);
+        firestore.collection("shopping_cart").document(shoppingCart.getId())
+                .update(values).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(context,"updated successfully",Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(context,"problem while updating",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
     }
 }

@@ -20,6 +20,8 @@ import com.example.nazanin.storefirebase.model.DAO.ShoppingCartManager;
 import com.example.nazanin.storefirebase.model.DTO.Customer;
 import com.example.nazanin.storefirebase.model.DTO.Product;
 import com.example.nazanin.storefirebase.model.DTO.ShoppingCart;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 
@@ -129,9 +131,14 @@ public class ShoppingCartAdapter extends RecyclerView.Adapter<ShoppingCartAdapte
             toPayTextview.setText(String.valueOf(calcTotal()));
             shoppingCarts.get(currentPosition).setQuantity(quantity);
             shoppingCarts.get(currentPosition).setTotalPrice(toPay);
-            manager.updatePaymentDetails(shoppingCarts.get(currentPosition));
-            customer_id=shoppingCarts.get(currentPosition).getCustomer_id();
-            shoppingListener.updateTotalPaymentDetails();
+            manager.updatePaymentDetails(shoppingCarts.get(currentPosition), new OnCompleteListener() {
+                @Override
+                public void onComplete(@NonNull Task task) {
+                    customer_id=shoppingCarts.get(currentPosition).getCustomer_id();
+                    shoppingListener.updateTotalPaymentDetails();
+                }
+            });
+
         }
 
         @Override

@@ -1,64 +1,105 @@
 package com.example.nazanin.storefirebase.model.DAO;
 
-import android.content.ContentValues;
+
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.example.nazanin.storefirebase.model.DTO.Order;
+import com.example.nazanin.storefirebase.model.DTO.Product;
 import com.example.nazanin.storefirebase.model.DTO.ShoppingCart;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OrderManager {
     private Context context;
-    private DbHelper dbHelper;
-    public SQLiteDatabase db;
+    private FirebaseFirestore firestore;
     private ArrayList<Order> orders=new ArrayList<>();
     private SimpleDateFormat dateFormat;
-    public static final String CREATE_TABLE_ORDERS="CREATE TABLE ORDERS (ID INTEGER PRIMARY KEY AUTOINCREMENT,SHOPPINGCART_ID INTEGER,CONFIRM_STATUS INTEGER,SENT_STATUS INTEGER,DATE_INSERTED TEXT)";
 
     public OrderManager(Context context){
         this.context=context;
-        dbHelper=new DbHelper(context);
+        firestore = FirebaseFirestore.getInstance();
         dateFormat=new SimpleDateFormat("yyyy-MM-dd");
     }
 
     public void addToOrders(ShoppingCart shoppingCart){
-        db=dbHelper.getWritableDatabase();
-        ContentValues values=new ContentValues();
-        values.put("shoppingcart_id",shoppingCart.getId());
-        values.put("confirm_status",shoppingCart.isConfirm_status());
-        values.put("sent_status",shoppingCart.isSent_status());
-        values.put("date_inserted",dateFormat.format(new Date()));
-        db.insert("ORDERS",null,values);
+        Order order = new Order();
+        order.setShoppingCartId(shoppingCart.getId());
+        order.setConfirm_status(shoppingCart.isConfirm_status());
+        order.setSent_status(shoppingCart.isSent_status());
+        order.setDate(dateFormat.format(new Date()));
+
+        DocumentReference reference = firestore.collection("orders").document();
+        order.setId(reference.getId());
+        reference.set(order).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(context,"inserted successfully",Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(context,"problem while inserting",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
-    public ArrayList<Order> getAllOrders(){
-        Order order;
-        db=dbHelper.getReadableDatabase();
-        Cursor orderCursor=db.rawQuery("SELECT * FROM ORDERS WHERE CONFIRM_STATUS=0",null);
-        if (orderCursor.moveToFirst()) {
-            while (!orderCursor.isAfterLast()) {
-                order=new Order();
-                order.setId(orderCursor.getInt(orderCursor.getColumnIndex("ID")));
-                order.setShoppingCartId(orderCursor.getInt(orderCursor.getColumnIndex("SHOPPINGCART_ID")));
-                order.setDate(orderCursor.getString(orderCursor.getColumnIndex("DATE_INSERTED")));
-                orders.add(order);
-                orderCursor.moveToNext();
-            }
-        }
-        orderCursor.close();
+    public ArrayList<Order> getAllOrders(final OnSuccessListener<ArrayList<Order>> listener){
+
+        firestore.collection("orders").whereEqualTo("confirm_status",0).get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()){
+
+                            for (QueryDocumentSnapshot snapshot:task.getResult()){
+                                orders.add(snapshot.toObject(Order.class));
+                                listener.onSuccess(orders);
+                            }
+                        }
+                        else {
+                            String localizedMessage = task.getException().getLocalizedMessage();
+                            Log.e("indexx",localizedMessage);
+                            Toast.makeText(context,localizedMessage,Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+                });
+
+
         return orders;
     }
 
     public void updateStatus(Order order){
-        db=dbHelper.getWritableDatabase();
-        ContentValues values=new ContentValues();
-        values.put("CONFIRM_STATUS",order.isConfirm_status() ? 1:0);
-        values.put("SENT_STATUS",order.isSent_status() ? 1:0);
-        db.update("ORDERS",values,"ID="+order.getId(),null);
+
+        Map<String, Object> values = new HashMap<>();
+        values.put("confirm_status",order.isConfirm_status() ? 1:0);
+        values.put("sent_status",order.isSent_status() ? 1:0);
+        firestore.collection("orders").document(order.getId())
+                .update(values).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(context,"updated successfully",Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(context,"problem while updating",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
     }
 }

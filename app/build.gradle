@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.nazanin.storefirebase"
-        minSdkVersion 16
-        targetSdkVersion 27
+        minSdkVersion 19
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -38,4 +38,11 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore:17.0.1'
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.8.0'
     implementation 'com.google.firebase:firebase-storage:16.0.1'
+//    implementation 'com.google.firebase:firebase-auth:21.0.6'
+//    implementation 'com.google.firebase:firebase-core:19.0.0'
+//    implementation 'com.google.firebase:firebase-database:16.0.1'
+//    implementation 'com.google.firebase:firebase-firestore:24.8.1'
+//    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.8.0'
+//    implementation 'com.google.firebase:firebase-storage:20.0.2'
+
 }

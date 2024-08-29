@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.example.nazanin.storefirebase.R;
 import com.example.nazanin.storefirebase.model.DAO.CustomerManager;
 import com.example.nazanin.storefirebase.model.DTO.Customer;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 
@@ -32,9 +33,15 @@ public class AllCustomersActivity extends AppCompatActivity {
         setContentView(R.layout.activity_all_customers);
         customersList=findViewById(R.id.customersListview);
         customerManager=new CustomerManager(this);
-        customers=customerManager.getAllCustomers();
-        CustomListview customListview=new CustomListview();
-        customersList.setAdapter(customListview);
+        customerManager.getAllCustomers(new OnSuccessListener<ArrayList<Customer>>() {
+            @Override
+            public void onSuccess(ArrayList<Customer> allcustomers) {
+                customers = allcustomers;
+                CustomListview customListview=new CustomListview();
+                customersList.setAdapter(customListview);
+            }
+        });
+
     }
 
     class CustomListview extends BaseAdapter {

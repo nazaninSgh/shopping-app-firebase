@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.example.nazanin.storefirebase.R;
 import com.example.nazanin.storefirebase.model.DAO.CustomerManager;
 import com.example.nazanin.storefirebase.model.DTO.Customer;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -41,15 +42,20 @@ public class IncreaseCreditActivity extends AppCompatActivity {
 
     public void confirm(View view) {
         if (!TextUtils.isEmpty(creditEdittext.getText())){
-            int credit=Integer.parseInt(creditEdittext.getText().toString());
+            final int credit=Integer.parseInt(creditEdittext.getText().toString());
             customer.setCredit(credit);
             CustomerManager customerManager=new CustomerManager(this);
-            customerManager.updateCustomerCredit(customer);
-            Intent intent=new Intent();
-            intent.putExtra("credit",credit);
-            setResult(RESULT_OK,intent);
-            Toast.makeText(this,"افزایش اعتبار با موفقیت انجام شد",Toast.LENGTH_SHORT).show();
-            finish();
+            customerManager.updateCustomerCredit(customer, new OnSuccessListener() {
+                @Override
+                public void onSuccess(Object o) {
+                    Intent intent=new Intent();
+                    intent.putExtra("credit",credit);
+                    setResult(RESULT_OK,intent);
+                    Toast.makeText(IncreaseCreditActivity.this,"افزایش اعتبار با موفقیت انجام شد",Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            });
+
         }
         else {
             creditEdittext.setError("ابتدا مبلغ مورد نظر را وارد کنید");

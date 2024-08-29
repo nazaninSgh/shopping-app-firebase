@@ -1,10 +1,8 @@
 package com.example.nazanin.storefirebase.model.DAO;
 
 
-import android.content.ContentValues;
+
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
@@ -13,6 +11,7 @@ import android.widget.Toast;
 import com.example.nazanin.storefirebase.model.DTO.Product;
 import com.example.nazanin.storefirebase.model.DTO.ShoppingCart;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -24,10 +23,12 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.Transaction;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,12 +42,11 @@ public class ProductManager {
     private ArrayList<Product> products;
     private SimpleDateFormat dateFormat;
 
-    public ProductManager(Context context){
-        this.context=context;
-        products=new ArrayList<>();
-        dateFormat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public ProductManager(Context context) {
+        this.context = context;
+        products = new ArrayList<>();
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         firestore = FirebaseFirestore.getInstance();
-        //database = FirebaseDatabase.getInstance("https://fir-demo-adc8c-default-rtdb.firebaseio.com/");
     }
 
     public ArrayList<Product> getNewestProducts(String category_id, final OnSuccessListener<ArrayList<Product>> listener){
@@ -61,6 +61,11 @@ public class ProductManager {
                         listener.onSuccess(products);
                     }
                 }
+                else {
+                    String localizedMessage = task.getException().getLocalizedMessage();
+                    Log.e("indexx",localizedMessage);
+                    Toast.makeText(context,localizedMessage,Toast.LENGTH_SHORT).show();
+                }
             }
         });
         return products;
@@ -72,11 +77,18 @@ public class ProductManager {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()){
+
                             for (QueryDocumentSnapshot snapshot:task.getResult()){
                                 products.add(snapshot.toObject(Product.class));
                                 listener.onSuccess(products);
                             }
                         }
+                        else {
+                            String localizedMessage = task.getException().getLocalizedMessage();
+                            Log.e("indexx",localizedMessage);
+                            Toast.makeText(context,localizedMessage,Toast.LENGTH_SHORT).show();
+                        }
+
                     }
                 });
 
@@ -107,6 +119,7 @@ public class ProductManager {
 
     public void insert(Product product){
         product.setDate(dateFormat.format(new Date()));
+        product.setSalesCount(0);
         DocumentReference reference = firestore.collection("products").document();
         product.setId(reference.getId());
         reference.set(product).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -160,25 +173,25 @@ public class ProductManager {
     }
 
     public ArrayList<Product> sortDesc(String category_id, final OnSuccessListener<ArrayList<Product>> listener){
-       firestore.collection("products").whereEqualTo("category_id",category_id)
-               .orderBy("price",Query.Direction.DESCENDING).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-           @Override
-           public void onComplete(@NonNull Task<QuerySnapshot> task) {
-               if (task.isSuccessful()) {
-                   for (QueryDocumentSnapshot snapshot : task.getResult()) {
-                       products.add(snapshot.toObject(Product.class));
+        firestore.collection("products").whereEqualTo("category_id",category_id)
+                .orderBy("price",Query.Direction.DESCENDING).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot snapshot : task.getResult()) {
+                        products.add(snapshot.toObject(Product.class));
 
-                       //Toast.makeText(context,products.get(1).getProductName()+"d",Toast.LENGTH_SHORT).show();
-                       listener.onSuccess(products);
-                   }
-               }
-               else {
-                   String localizedMessage = task.getException().getLocalizedMessage();
-                   Log.e("indexx",localizedMessage);
-                   Toast.makeText(context,localizedMessage,Toast.LENGTH_SHORT).show();
-               }
-           }
-       });
+                        //Toast.makeText(context,products.get(1).getProductName()+"d",Toast.LENGTH_SHORT).show();
+                        listener.onSuccess(products);
+                    }
+                }
+                else {
+                    String localizedMessage = task.getException().getLocalizedMessage();
+                    Log.e("indexx",localizedMessage);
+                    Toast.makeText(context,localizedMessage,Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         return products;
     }
 
@@ -204,35 +217,76 @@ public class ProductManager {
         return products;
     }
 
-    public ArrayList<Integer> getBestSeller(){
-        ArrayList<Integer> product_ids=new ArrayList<>();
-//        db=dbHelper.getReadableDatabase();
-//        Cursor cursor=db.rawQuery("SELECT PRODUCT_ID FROM SHOPPING_CART INNER JOIN ORDERS ON SHOPPING_CART.ID=ORDERS.SHOPPINGCART_ID  WHERE ORDERS.SENT_STATUS=1 GROUP BY PRODUCT_ID ORDER BY SUM(QUANTITY) DESC LIMIT 5",null);
-//        cursor.moveToFirst();
-//        while (!cursor.isAfterLast()) {
-//            int product_id = cursor.getInt(cursor.getColumnIndex("PRODUCT_ID"));
-//            product_ids.add(product_id);
-//            cursor.moveToNext();
-//        }
-        return product_ids;
+    public void getBestSeller(final OnSuccessListener<ArrayList<Product>> listener){
+        firestore.collection("products").orderBy("sales_count",Query.Direction.DESCENDING).limit(4)
+        .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()){
+                    for (QueryDocumentSnapshot snapshot:task.getResult()){
+                        products.add(snapshot.toObject(Product.class));
+                        listener.onSuccess(products);
+                    }
+                }
+                else {
+                    String localizedMessage = task.getException().getLocalizedMessage();
+                    Log.e("indexx",localizedMessage);
+                    Toast.makeText(context,localizedMessage,Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
-    public void getBackStock(ShoppingCart shoppingCart){
-//        db=dbHelper.getWritableDatabase();
-//        ProductManager productManager=new ProductManager(context);
-//        Product product=productManager.searchProductById(shoppingCart.getProduct_id());
-//        ContentValues values=new ContentValues();
-//        values.put("stock",product.getStock()+shoppingCart.getQuantity());
-//        db.update("PRODUCTS",values,"ID="+shoppingCart.getProduct_id(),null);
-    }
+    public void updateStock(final ShoppingCart shoppingCart, final Boolean outflow){
 
-    public void updateStock(ShoppingCart shoppingCart){
-//        db=dbHelper.getWritableDatabase();
-//        ProductManager productManager=new ProductManager(context);
-//        Product product=productManager.searchProductById(shoppingCart.getProduct_id());
-//        ContentValues values=new ContentValues();
-//        values.put("stock",product.getStock()-shoppingCart.getQuantity());
-//        db.update("PRODUCTS",values,"ID="+shoppingCart.getProduct_id(),null);
+        ProductManager productManager=new ProductManager(context);
+        productManager.searchProductById(shoppingCart.getProduct_id()).addOnCompleteListener(new OnCompleteListener<Product>() {
+            @Override
+            public void onComplete(@NonNull Task<Product> task) {
+                if (task.isSuccessful()) {
+                    final DocumentReference productRef = firestore.collection("products").document(shoppingCart.getProduct_id());
+                    firestore.runTransaction(new Transaction.Function<Void>() {
+                        @Override
+                        public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                            DocumentSnapshot snapshot = transaction.get(productRef);
+                            int currentStock = snapshot.getLong("stock").intValue();
+                            int currentSalesCount = snapshot.getLong("sales_count").intValue();
+                            // Calculate the new stock and sales count values
+                            int newStock = outflow ? currentStock - shoppingCart.getQuantity() : currentStock + shoppingCart.getQuantity();
+                            int newSalesCount = outflow ? currentSalesCount + shoppingCart.getQuantity() : currentSalesCount;
+
+                            // Ensure stock does not go negative
+                            if (newStock < 0) {
+                                throw new FirebaseFirestoreException("Insufficient stock", FirebaseFirestoreException.Code.ABORTED);
+                            }
+                            // Update the stock and sales count in Firestore
+                            Map<String, Object> updates = new HashMap<>();
+                            updates.put("stock", newStock);
+                            if (outflow) {
+                                updates.put("salesCount", newSalesCount);
+                            }
+                            transaction.update(productRef, updates);
+
+                            return null;
+
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(context, "Updated successfully", Toast.LENGTH_SHORT).show();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(context, "Problem while updating", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }else {
+                    Toast.makeText(context, "Product wasn't found", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
     }
 
 }

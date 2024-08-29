@@ -14,6 +14,7 @@ import com.example.nazanin.storefirebase.R;
 import com.example.nazanin.storefirebase.controller.FileManager;
 import com.example.nazanin.storefirebase.model.DAO.ProductManager;
 import com.example.nazanin.storefirebase.model.DTO.Product;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 
@@ -23,8 +24,6 @@ public class BestSellerActivity extends AppCompatActivity {
 
     private ListView productList;
     private ArrayList<Product> products=new ArrayList<>();
-    private Product product;
-    private ArrayList<Integer> product_ids=new ArrayList<>();
     private CustomListview customListview;
     private ProductManager manager;
 
@@ -42,13 +41,15 @@ public class BestSellerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_best_seller);
         productList=findViewById(R.id.productListview);
         manager=new ProductManager(this);
-        product_ids=manager.getBestSeller();
-        for (int i = 0; i <product_ids.size() ; i++) {
-            //product=manager.searchProductById(product_ids.get(i));
-            products.add(product);
-        }
-        customListview=new CustomListview();
-        productList.setAdapter(customListview);
+        manager.getBestSeller(new OnSuccessListener<ArrayList<Product>>() {
+            @Override
+            public void onSuccess(ArrayList<Product> bestSellerProducts) {
+                products = bestSellerProducts;
+                customListview=new CustomListview();
+                productList.setAdapter(customListview);
+            }
+        });
+
     }
 
     public class CustomListview extends BaseAdapter {
@@ -58,7 +59,7 @@ public class BestSellerActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return product_ids.size();
+            return products.size();
         }
 
         @Override

@@ -1,8 +1,8 @@
 package com.example.nazanin.storefirebase.model.DTO;
 
 public class Order {
-    private int id;
-    private int shoppingCartId;
+    private String id;
+    private String shoppingCartId;
     private boolean confirm_status;
     private boolean sent_status;
     private String date;
@@ -11,7 +11,7 @@ public class Order {
 
     }
 
-    public Order(int id, int shoppingCartId, boolean confirm_status, boolean sent_status, String date) {
+    public Order(String id, String shoppingCartId, boolean confirm_status, boolean sent_status, String date) {
         this.id = id;
         this.shoppingCartId = shoppingCartId;
         this.confirm_status = confirm_status;
@@ -35,19 +35,19 @@ public class Order {
         this.date = date;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getShoppingCartId() {
+    public String getShoppingCartId() {
         return shoppingCartId;
     }
 
-    public void setShoppingCartId(int shoppingCartId) {
+    public void setShoppingCartId(String shoppingCartId) {
         this.shoppingCartId = shoppingCartId;
     }
 

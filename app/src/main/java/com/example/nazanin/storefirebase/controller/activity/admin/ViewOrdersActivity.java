@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.widget.Toast;
 
 import com.example.nazanin.storefirebase.R;
 import com.example.nazanin.storefirebase.controller.adapter.OrdersAdapter;
@@ -16,6 +17,7 @@ import com.example.nazanin.storefirebase.model.DAO.ShoppingCartManager;
 import com.example.nazanin.storefirebase.model.DTO.Customer;
 import com.example.nazanin.storefirebase.model.DTO.Order;
 import com.example.nazanin.storefirebase.model.DTO.ShoppingCart;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 
@@ -54,22 +56,47 @@ public class ViewOrdersActivity extends AppCompatActivity implements OrdersAdapt
         orders.get(position).setConfirm_status(true);
         orders.get(position).setSent_status(true);
         orderManager.updateStatus(orders.get(position));
-        ShoppingCart shoppingCart=shoppingCartManager.giveShoppingCart(orders.get(position).getShoppingCartId());
-        shoppingCart.setSent_status(true);
-        shoppingCartManager.updateStatus(shoppingCart);
+        shoppingCartManager.giveShoppingCart(orders.get(position).getShoppingCartId(), new OnSuccessListener<ShoppingCart>() {
+            @Override
+            public void onSuccess(ShoppingCart shoppingCart) {
+                shoppingCart.setSent_status(true);
+                shoppingCartManager.updateStatus(shoppingCart, new OnSuccessListener() {
+                    @Override
+                    public void onSuccess(Object o) {
+                        Toast.makeText(ViewOrdersActivity.this,"order status successfully updated",Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
     }
 
     @Override
-    public void onCancelClick(int position) {
+    public void onCancelClick(final int position) {
         orders.get(position).setConfirm_status(true);
         orders.get(position).setSent_status(false);
-        ShoppingCart shoppingCart=shoppingCartManager.giveShoppingCart(orders.get(position).getShoppingCartId());
-        CustomerManager customerManager=new CustomerManager(this);
-        Customer customer=customerManager.searchCustomerById(shoppingCart.getCustomer_id());
-        customer.setCredit(shoppingCart.getTotalPrice()+customer.getCredit());
-        customerManager.updateCustomerCredit(customer);
-        ProductManager productManager=new ProductManager(this);
-        productManager.getBackStock(shoppingCart);
-        orderManager.updateStatus(orders.get(position));
+        shoppingCartManager.giveShoppingCart(orders.get(position).getShoppingCartId(), new OnSuccessListener<ShoppingCart>() {
+            @Override
+            public void onSuccess(final ShoppingCart shoppingCart) {
+                final CustomerManager customerManager=new CustomerManager(ViewOrdersActivity.this);
+                customerManager.searchCustomerById(shoppingCart.getCustomer_id(), new OnSuccessListener<Customer>() {
+                    @Override
+                    public void onSuccess(Customer customer) {
+                        customer.setCredit(shoppingCart.getTotalPrice()+customer.getCredit());
+                        customerManager.updateCustomerCredit(customer, new OnSuccessListener() {
+                            @Override
+                            public void onSuccess(Object o) {
+                                ProductManager productManager=new ProductManager(ViewOrdersActivity.this);
+                                productManager.updateStock(shoppingCart, false);
+                                orderManager.updateStatus(orders.get(position));
+                            }
+                        });
+
+                    }
+                });
+            }
+        });
+
+
     }
 }
