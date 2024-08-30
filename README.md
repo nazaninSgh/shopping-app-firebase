@@ -5,6 +5,7 @@
 - In this project, I'm modifying [my previous store app](https://github.com/nazaninSgh/offline-store-app) to integrate Google Cloud Firebase, enhancing its functionality with real-time updates and cloud storage.
 - The authentication is done using Firebase authentication.
 - Firestore is used to manage data in the form of collections and documents. This NoSQL database fits this application's requirements due to real-time updates and extensive querying tools. (In progress)
+- Firestore transactions are used for order confirmation, stock, and sales count changes, shopping cart status updates, and user credit updates.
 - The real-time nature and asynchronous calls are particularly useful for providing users with live product stock information and managing their shopping cart.
 - Firebase storage is used to store media files on the cloud and retrieve them using their download URL.
 
