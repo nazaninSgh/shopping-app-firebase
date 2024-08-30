@@ -13,6 +13,7 @@ import com.example.nazanin.storefirebase.R;
 import com.example.nazanin.storefirebase.model.DAO.ShoppingCartManager;
 import com.example.nazanin.storefirebase.model.DTO.Order;
 import com.example.nazanin.storefirebase.model.DTO.ShoppingCart;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 
@@ -35,15 +36,20 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.MyViewHold
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position) {
         this.position=position;
         ShoppingCartManager manager=new ShoppingCartManager(context);
-        int shoppingCartId=orders.get(position).getShoppingCartId();
-        ShoppingCart shoppingCart=manager.giveShoppingCart(shoppingCartId);
-        holder.productId.setText(String.valueOf(shoppingCart.getProduct_id()));
-        holder.customerId.setText(String.valueOf(shoppingCart.getCustomer_id()));
-        holder.quantity.setText(String.valueOf(shoppingCart.getQuantity()));
-        holder.date.setText(orders.get(position).getDate());
+        String shoppingCartId=orders.get(position).getShoppingCartId();
+        manager.giveShoppingCart(shoppingCartId, new OnSuccessListener<ShoppingCart>() {
+            @Override
+            public void onSuccess(ShoppingCart shoppingCart) {
+                holder.productId.setText(String.valueOf(shoppingCart.getProduct_id()));
+                holder.customerId.setText(String.valueOf(shoppingCart.getCustomer_id()));
+                holder.quantity.setText(String.valueOf(shoppingCart.getQuantity()));
+                holder.date.setText(orders.get(position).getDate());
+            }
+        });
+
 
     }
 

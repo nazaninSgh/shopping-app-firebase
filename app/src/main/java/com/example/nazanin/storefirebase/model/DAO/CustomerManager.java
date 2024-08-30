@@ -21,6 +21,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Transaction;
 
 import java.util.ArrayList;
 
@@ -75,23 +76,11 @@ public class CustomerManager {
             }
         });
     }
+    public void updateCustomersCredit(Transaction transaction,Customer customer){
+        DocumentReference reference = FirebaseFirestore.getInstance().collection("customers").document(customer.getId());
+        transaction.update(reference,"credit",customer.getCredit());
 
-    public void updateCustomerCredit(Customer customer,OnSuccessListener listener){
-        FirebaseFirestore.getInstance().collection("customers").document(customer.getId())
-                .update("credit",customer.getCredit()).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    Toast.makeText(context,"credit successfully updated",Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    Toast.makeText(context,"problem while updating your credit",Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
     }
-
     public void updateCustomerActiveState(String id,boolean isActive){
         FirebaseFirestore.getInstance().collection("customers").document(id)
                 .update("isactive",isActive).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -136,6 +125,21 @@ public class CustomerManager {
                 } else {
                     Toast.makeText(context, "problem while retrieving customer", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+    }
+    public void updateCustomerCredit(Customer customer,OnSuccessListener listener){
+        FirebaseFirestore.getInstance().collection("customers").document(customer.getId())
+                .update("credit",customer.getCredit()).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(context,"credit successfully updated",Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(context,"problem while updating your credit",Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
     }

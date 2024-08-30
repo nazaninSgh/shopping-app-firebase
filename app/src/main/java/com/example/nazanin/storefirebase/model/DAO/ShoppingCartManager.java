@@ -17,6 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Transaction;
 //import com.google.firebase.firestore.AggregateField;
 //import com.google.firebase.firestore.AggregateQuery;
 
@@ -194,21 +195,11 @@ public class ShoppingCartManager {
         });
     }
 
-    public void updateStatus(ShoppingCart shoppingCart, OnSuccessListener listener){
+    public void updateStatus(Transaction transaction, String id,Boolean confirmStatus,Boolean sentStatus){
         Map<String, Object> values = new HashMap<>();
-        values.put("confirm_status",shoppingCart.isConfirm_status() ? 1:0);
-        firestore.collection("shopping_cart").document(shoppingCart.getId())
-                .update(values).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    Toast.makeText(context,"updated successfully",Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    Toast.makeText(context,"problem while updating",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
+        values.put("confirm_status",confirmStatus ? 1:0);
+        values.put("sent_status",sentStatus ? 1:0);
+        DocumentReference reference = firestore.collection("shopping_cart").document(id);
+        transaction.update(reference,values);
     }
 }

@@ -1,6 +1,8 @@
 package com.example.nazanin.storefirebase.controller.activity.admin;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -17,7 +19,11 @@ import com.example.nazanin.storefirebase.model.DAO.ShoppingCartManager;
 import com.example.nazanin.storefirebase.model.DTO.Customer;
 import com.example.nazanin.storefirebase.model.DTO.Order;
 import com.example.nazanin.storefirebase.model.DTO.ShoppingCart;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Transaction;
 
 import java.util.ArrayList;
 
@@ -41,14 +47,20 @@ public class ViewOrdersActivity extends AppCompatActivity implements OrdersAdapt
         setContentView(R.layout.activity_view_orders);
         orderManager=new OrderManager(this);
         shoppingCartManager=new ShoppingCartManager(this);
-        orders=orderManager.getAllOrders();
-        recyclerView = findViewById(R.id.ordersrecyclerview);
-        OrdersAdapter adapter=new OrdersAdapter(orders,this);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(adapter);
-        adapter.setOnItemClickListener(this);
+        orderManager.getAllOrders(new OnSuccessListener<ArrayList<Order>>() {
+            @Override
+            public void onSuccess(ArrayList<Order> allorders) {
+                orders = allorders;
+                recyclerView = findViewById(R.id.ordersrecyclerview);
+                OrdersAdapter adapter=new OrdersAdapter(orders,ViewOrdersActivity.this);
+                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+                recyclerView.setLayoutManager(mLayoutManager);
+                recyclerView.setItemAnimator(new DefaultItemAnimator());
+                recyclerView.setAdapter(adapter);
+                adapter.setOnItemClickListener(ViewOrdersActivity.this);
+            }
+        });
+
     }
 
     @Override
@@ -56,18 +68,6 @@ public class ViewOrdersActivity extends AppCompatActivity implements OrdersAdapt
         orders.get(position).setConfirm_status(true);
         orders.get(position).setSent_status(true);
         orderManager.updateStatus(orders.get(position));
-        shoppingCartManager.giveShoppingCart(orders.get(position).getShoppingCartId(), new OnSuccessListener<ShoppingCart>() {
-            @Override
-            public void onSuccess(ShoppingCart shoppingCart) {
-                shoppingCart.setSent_status(true);
-                shoppingCartManager.updateStatus(shoppingCart, new OnSuccessListener() {
-                    @Override
-                    public void onSuccess(Object o) {
-                        Toast.makeText(ViewOrdersActivity.this,"order status successfully updated",Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
 
     }
 
@@ -75,28 +75,43 @@ public class ViewOrdersActivity extends AppCompatActivity implements OrdersAdapt
     public void onCancelClick(final int position) {
         orders.get(position).setConfirm_status(true);
         orders.get(position).setSent_status(false);
+        final CustomerManager customerManager=new CustomerManager(ViewOrdersActivity.this);
         shoppingCartManager.giveShoppingCart(orders.get(position).getShoppingCartId(), new OnSuccessListener<ShoppingCart>() {
             @Override
             public void onSuccess(final ShoppingCart shoppingCart) {
-                final CustomerManager customerManager=new CustomerManager(ViewOrdersActivity.this);
+
                 customerManager.searchCustomerById(shoppingCart.getCustomer_id(), new OnSuccessListener<Customer>() {
                     @Override
-                    public void onSuccess(Customer customer) {
+                    public void onSuccess(final Customer customer) {
                         customer.setCredit(shoppingCart.getTotalPrice()+customer.getCredit());
-                        customerManager.updateCustomerCredit(customer, new OnSuccessListener() {
+                        FirebaseFirestore.getInstance().runTransaction(new Transaction.Function<Void>() {
                             @Override
-                            public void onSuccess(Object o) {
-                                ProductManager productManager=new ProductManager(ViewOrdersActivity.this);
-                                productManager.updateStock(shoppingCart, false);
+                            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                                customerManager.updateCustomersCredit(transaction, customer);
+
                                 orderManager.updateStatus(orders.get(position));
+
+                                ProductManager productManager=new ProductManager(ViewOrdersActivity.this);
+                                productManager.updateStock(transaction,shoppingCart, false);
+                                return null;
+                            }
+                        }).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                // Handle success
+                                Toast.makeText(ViewOrdersActivity.this, "Order canceled successfully", Toast.LENGTH_SHORT).show();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Handle failure
+                                Toast.makeText(ViewOrdersActivity.this, "Error canceling order: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
-
                     }
                 });
             }
         });
-
 
     }
 }

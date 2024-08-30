@@ -135,15 +135,6 @@ public class FinalPaymentActivity extends AppCompatActivity implements ShoppingC
                 for (final ShoppingCart shoppingCartItem : shoppingCarts) {
                     orderManager.addToOrders(shoppingCartItem);
                     ProductViewActivity.orderSaved = true;
-                    ShoppingCartManager shoppingCartManager = new ShoppingCartManager(this);
-                    shoppingCartItem.setConfirm_status(true);
-                    shoppingCartManager.updateStatus(shoppingCartItem, new OnSuccessListener() {
-                        @Override
-                        public void onSuccess(Object o) {
-                            ProductManager productManager = new ProductManager(FinalPaymentActivity.this);
-                            productManager.updateStock(shoppingCartItem, true);
-                        }
-                    });
 
                 }
                 CustomerManager manager = new CustomerManager(this);

@@ -219,7 +219,7 @@ public class ProductManager {
 
     public void getBestSeller(final OnSuccessListener<ArrayList<Product>> listener){
         firestore.collection("products").orderBy("sales_count",Query.Direction.DESCENDING).limit(4)
-        .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()){
@@ -237,55 +237,28 @@ public class ProductManager {
         });
     }
 
-    public void updateStock(final ShoppingCart shoppingCart, final Boolean outflow){
+    public void updateStock(Transaction transaction,final ShoppingCart shoppingCart, final Boolean outflow) throws FirebaseFirestoreException {
 
-        ProductManager productManager=new ProductManager(context);
-        productManager.searchProductById(shoppingCart.getProduct_id()).addOnCompleteListener(new OnCompleteListener<Product>() {
-            @Override
-            public void onComplete(@NonNull Task<Product> task) {
-                if (task.isSuccessful()) {
-                    final DocumentReference productRef = firestore.collection("products").document(shoppingCart.getProduct_id());
-                    firestore.runTransaction(new Transaction.Function<Void>() {
-                        @Override
-                        public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                            DocumentSnapshot snapshot = transaction.get(productRef);
-                            int currentStock = snapshot.getLong("stock").intValue();
-                            int currentSalesCount = snapshot.getLong("sales_count").intValue();
-                            // Calculate the new stock and sales count values
-                            int newStock = outflow ? currentStock - shoppingCart.getQuantity() : currentStock + shoppingCart.getQuantity();
-                            int newSalesCount = outflow ? currentSalesCount + shoppingCart.getQuantity() : currentSalesCount;
+        final DocumentReference productRef = firestore.collection("products").document(shoppingCart.getProduct_id());
 
-                            // Ensure stock does not go negative
-                            if (newStock < 0) {
-                                throw new FirebaseFirestoreException("Insufficient stock", FirebaseFirestoreException.Code.ABORTED);
-                            }
-                            // Update the stock and sales count in Firestore
-                            Map<String, Object> updates = new HashMap<>();
-                            updates.put("stock", newStock);
-                            if (outflow) {
-                                updates.put("salesCount", newSalesCount);
-                            }
-                            transaction.update(productRef, updates);
+        DocumentSnapshot snapshot = transaction.get(productRef);
+        int currentStock = snapshot.getLong("stock").intValue();
+        int currentSalesCount = snapshot.getLong("sales_count").intValue();
+        // Calculate the new stock and sales count values
+        int newStock = outflow ? currentStock - shoppingCart.getQuantity() : currentStock + shoppingCart.getQuantity();
+        int newSalesCount = outflow ? currentSalesCount + shoppingCart.getQuantity() : currentSalesCount;
 
-                            return null;
-
-                        }
-                    }).addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Toast.makeText(context, "Updated successfully", Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(context, "Problem while updating", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }else {
-                    Toast.makeText(context, "Product wasn't found", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        // Ensure stock does not go negative
+        if (newStock < 0) {
+            throw new FirebaseFirestoreException("Insufficient stock", FirebaseFirestoreException.Code.ABORTED);
+        }
+        // Update the stock and sales count in Firestore
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("stock", newStock);
+        if (outflow) {
+            updates.put("salesCount", newSalesCount);
+        }
+        transaction.update(productRef, updates);
 
     }
 
